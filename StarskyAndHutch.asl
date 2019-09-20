@@ -58,9 +58,8 @@ state("StarskyPC")
 	//Increments over the course of the mission. Is set to 4 when the car reaches the airport waypoint.
 	byte S2E3RouteStage : "StarskyPC.exe", 0x26FA88, 0x164, 0x64, 0x38, 0x4;
 	
-	//Splits about a second late but it's better than nothing.
-	//TODO: Check the mission script for a better value to check.
-	byte S2E5MincerStatus : "StarskyPC.exe", 0x28CAB0;
+	//Set to 1 when the mincer is deactivated.
+	byte S2E5MincerOff : "StarskyPC.exe", 0x26FA88, 0x1F8, 0x64, 0x14, 0x4;
 	
 	//Goes from 0-4 over the course of the mission, but reaches 4 before the senator arrives, so must be checked in conjunction with "repetitions".
 	byte S3E4RouteStage : "StarskyPC.exe", 0x26FA88, 0x184, 0x64, 0xB0, 0x4;
@@ -73,6 +72,8 @@ state("StarskyPC")
 
 startup
 {
+	refreshRate = 30;
+	
 	settings.Add("season1", false, "Season 1");
 	settings.Add("s1e1", true, "Fast Cars", "season1");
 	settings.Add("s1e2", true, "Special Withdrawal", "season1");
@@ -164,7 +165,7 @@ split
 		if(settings["s2e4"] && current.S2E4Text.ToLower() == "s2e4" && current.S2E4CarStatus == (old.S2E4CarStatus + 0x40))
 			return true;
 		
-		if(settings["s2e5"] && current.S2E5Text.ToLower() == "s2e5" && current.S2E5MincerStatus == 0x74 && old.S2E5MincerStatus == 0x7C)
+		if(settings["s2e5"] && current.S2E5Text.ToLower() == "s2e5" && current.S2E5MincerOff == 1 && old.S2E5MincerOff == 0)
 			return true;
 		
 		if(settings["s2e6"] && current.S2E6Text.ToLower() == "s2e6" && current.S2E6CarStatus == (old.S2E6CarStatus + 0x40))
