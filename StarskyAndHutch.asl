@@ -1,11 +1,9 @@
 state("StarskyPC")
-{
-	//This always has a value of 0x54B38000 when on mission select and changes when you select an episode.
-	//Not sure what the value actually represents but it works for this purpose.
-	uint StartThing : "StarskyPC.exe", 0x2A55FC;
-	
+{	
 	uint SelectedEpisode : "StarskyPC.exe", 0x2A55EC;
 	uint SelectedSeason : "StarskyPC.exe", 0x2A5548;
+	
+	byte GameState : "StarskyPC.exe", 0x2A51A4;
 	
 	//Text from the prefix of mission cars. Used to check which mission the player is currently on.
 	string4 S1E1Text : "StarskyPC.exe", 0x28DC6C;
@@ -100,26 +98,26 @@ startup
 }
 
 start
-{
-	if(settings["season1"] && current.SelectedSeason == 0 && current.SelectedEpisode == 0 && old.StartThing == 0x43B38000 && current.StartThing != 0x43B38000)
+{	
+	if(settings["season1"] && current.SelectedSeason == 0 && current.SelectedEpisode == 0 && old.GameState == 9 && current.GameState == 3)
 		return true;
 	
-	if(settings["season2"] && current.SelectedSeason == 1 && current.SelectedEpisode == 0 && old.StartThing == 0x43B38000 && current.StartThing != 0x43B38000)
+	if(settings["season2"] && current.SelectedSeason == 1 && current.SelectedEpisode == 0 && old.GameState == 9 && current.GameState == 3)
 		return true;
 	
-	if(settings["season3"] && current.SelectedSeason == 2 && current.SelectedEpisode == 0 && old.StartThing == 0x43B38000 && current.StartThing != 0x43B38000)
+	if(settings["season3"] && current.SelectedSeason == 2 && current.SelectedEpisode == 0 && old.GameState == 9 && current.GameState == 3)
 		return true;
 }
 
 reset
 {
-	if(settings["season1"] && current.SelectedSeason == 0 && current.SelectedEpisode == 0 && old.StartThing == 0x43B38000 && current.StartThing != 0x43B38000)
+	if(settings["season1"] && current.SelectedSeason == 0 && current.SelectedEpisode == 0 && old.GameState == 9 && current.GameState == 3)
 		return true;
 	
-	if(settings["season2"] && current.SelectedSeason == 1 && current.SelectedEpisode == 0 && old.StartThing == 0x43B38000 && current.StartThing != 0x43B38000)
+	if(settings["season2"] && current.SelectedSeason == 1 && current.SelectedEpisode == 0 && old.GameState == 9 && current.GameState == 3)
 		return true;
 	
-	if(settings["season3"] && current.SelectedSeason == 2 && current.SelectedEpisode == 0 && old.StartThing == 0x43B38000 && current.StartThing != 0x43B38000)
+	if(settings["season3"] && current.SelectedSeason == 2 && current.SelectedEpisode == 0 && old.GameState == 9 && current.GameState == 3)
 		return true;
 }
 
