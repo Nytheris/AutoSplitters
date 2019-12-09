@@ -1,9 +1,13 @@
 state("StarskyPC")
-{	
+{
+	byte GameRunning : "StarskyPC.exe", 0x2CE228;
+	byte GameState : "StarskyPC.exe", 0x2A51A4;
+	
+	//Is 0x80000000 while the game is loading.
+	uint IsLoading : "StarskyPC.exe", 0x3654D0;
+	
 	uint SelectedEpisode : "StarskyPC.exe", 0x2A55EC;
 	uint SelectedSeason : "StarskyPC.exe", 0x2A5548;
-	
-	byte GameState : "StarskyPC.exe", 0x2A51A4;
 	
 	//Text from the prefix of mission cars. Used to check which mission the player is currently on.
 	string4 S1E1Text : "StarskyPC.exe", 0x28DC6C;
@@ -97,6 +101,21 @@ startup
 	settings.Add("s3e6", true, "18 Wheels of Trouble", "season3");
 }
 
+init
+{
+	timer.IsGameTimePaused = false;
+}
+
+exit
+{
+	timer.IsGameTimePaused = true;
+}
+
+isLoading
+{
+	return (current.IsLoading == 0x80000000 || current.GameRunning == 0);
+}
+
 start
 {	
 	if(settings["season1"] && current.SelectedSeason == 0 && current.SelectedEpisode == 0 && old.GameState == 9 && current.GameState == 3)
@@ -122,7 +141,7 @@ reset
 }
 
 split
-{
+{	
 	if(settings["season1"])
 	{
 		if(settings["s1e1"] && current.S1E1Text.ToLower() == "s1e1" && current.S1E1CarStatus == (old.S1E1CarStatus + 0x40))
