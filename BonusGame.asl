@@ -15,9 +15,9 @@ state("Simpsons", "FairLightENG")
 
 state("Simpsons", "NonENGVarious")
 {
-	uint totalTime : 0x2C8774, 0x24, 0x28, 0x0, 0x14, 0x8;
-	byte lapsCompleted : 0x2C8774, 0x24, 0x28, 0x0, 0x14, 0xC;
-	uint carCheck : 0x2C8774, 0x24, 0x28, 0x0, 0x10, 0x40;
+	uint totalTime : "Simpsons.exe", 0x2C8774, 0x24, 0x28, 0x0, 0x14, 0x8;
+	byte lapsCompleted : "Simpsons.exe", 0x2C8774, 0x24, 0x28, 0x0, 0x14, 0xC;
+	uint carCheck : "Simpsons.exe", 0x2C8774, 0x24, 0x28, 0x0, 0x10, 0x40;
 	byte trackNumber : "Simpsons.exe", 0x2C890C, 0x28, 0x820;
 }
 
@@ -31,6 +31,8 @@ startup
 		vars.totalIGT = 0;
 		vars.raceIGT = 0;
 		vars.startedRaces = 0;
+		vars.delayedUpdate = false;
+		vars.shouldSplit = false;
 	});
 	
 	timer.OnReset += vars.TimerReset;
@@ -42,6 +44,8 @@ init
 	vars.totalIGT = 0;
 	vars.raceIGT = 0;
 	vars.startedRaces = 0;
+	vars.delayedUpdate = false;
+	vars.shouldSplit = false;
 	
 	//Version checking
 	switch (modules.First().ModuleMemorySize)
@@ -90,21 +94,35 @@ reset
 update
 {
 	//carCheck is needed because without it, the code sometimes thinks you've completed a lap when you load into a race.
-	if((current.lapsCompleted == old.lapsCompleted + 1) && (old.carCheck != 4294967295 && current.carCheck != 4294967295))
+	if(((current.lapsCompleted == old.lapsCompleted + 1) && (old.carCheck != 4294967295 && current.carCheck != 4294967295)) || vars.delayedUpdate)
 	{
-		vars.raceIGT = current.totalTime;
-		
-		//When last lap finished, round the race IGT appropriately before adding to total.
-		if(current.lapsCompleted == 5)
+		//Very rarely, livesplit will retreive the values after the number of laps increases but before the total time increases.
+		//This just delays the timer update and split until the total time updates.
+		if(current.totalTime == vars.raceIGT)
 		{
-			if(vars.raceIGT % 10000 >= 5000)
+			vars.delayedUpdate = true;
+		}
+		else
+		{
+			vars.raceIGT = current.totalTime;
+		
+			//When last lap finished, round the race IGT appropriately before adding to total.
+			if(current.lapsCompleted == 5)
 			{
-				vars.raceIGT += 5000;
+				if(vars.raceIGT % 10000 >= 5000)
+				{
+					vars.raceIGT += 5000;
+				}
+				
+				vars.raceIGT = (vars.raceIGT / 10000) * 10000;
+				vars.totalIGT += vars.raceIGT;
+				vars.raceIGT = 0;
 			}
 			
-			vars.raceIGT = (vars.raceIGT / 10000) * 10000;
-			vars.totalIGT += vars.raceIGT;
-			vars.raceIGT = 0;
+			vars.delayedUpdate = false;
+			
+			//Because every lap has a split, can simplify the split logic by just checking this :)
+			vars.shouldSplit = true;
 		}
 	}
 }
@@ -124,9 +142,12 @@ gameTime
 
 split
 {
-	//carCheck needed for aforementioned reasons.
-	if((current.lapsCompleted == old.lapsCompleted + 1) && (old.carCheck != 4294967295 && current.carCheck != 4294967295))
+	//Simples :)
+	if(vars.shouldSplit)
+	{
+		vars.shouldSplit = false;
 		return true;
+	}
 }
 
 shutdown
