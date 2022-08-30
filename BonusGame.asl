@@ -1,9 +1,10 @@
 state("Simpsons")
 {
-	string8 verCheck : 0x24AB28;
+	// Credits Lucas Cardellini
+	uint verCheck : 0x193FFF;
 }
 
-state("Simpsons", "FairLightENG")
+state("Simpsons", "ReleaseEnglish")
 {
 	uint totalTime : "Simpsons.exe", 0x2C87B4, 0x24, 0x28, 0x0, 0x14, 0x8; //Stored in microseconds.
 	byte lapsCompleted : "Simpsons.exe", 0x2C87B4, 0x24, 0x28, 0x0, 0x14, 0xC; //Self explanatory.
@@ -13,12 +14,20 @@ state("Simpsons", "FairLightENG")
 	Must be used in conjunction with carCheck to prevent resets while in track select.*/
 }
 
-state("Simpsons", "NonENGVarious")
+state("Simpsons", "ReleaseInternational")
 {
 	uint totalTime : "Simpsons.exe", 0x2C8774, 0x24, 0x28, 0x0, 0x14, 0x8;
 	byte lapsCompleted : "Simpsons.exe", 0x2C8774, 0x24, 0x28, 0x0, 0x14, 0xC;
 	uint carCheck : "Simpsons.exe", 0x2C8774, 0x24, 0x28, 0x0, 0x10, 0x40;
 	byte trackNumber : "Simpsons.exe", 0x2C890C, 0x28, 0x820;
+}
+
+state("Simpsons", "BestSellersSeries")
+{
+	uint totalTime : "Simpsons.exe", 0x2C87AC, 0x24, 0x28, 0x0, 0x14, 0x8;
+	byte lapsCompleted : "Simpsons.exe", 0x2C87AC, 0x24, 0x28, 0x0, 0x14, 0xC;
+	uint carCheck : "Simpsons.exe", 0x2C87AC, 0x24, 0x28, 0x0, 0x10, 0x40;
+	byte trackNumber : "Simpsons.exe", 0x2C8944, 0x28, 0x820;
 }
 
 startup
@@ -47,18 +56,18 @@ init
 	vars.delayedUpdate = false;
 	vars.shouldSplit = false;
 	
-	//Version checking
-	switch (modules.First().ModuleMemorySize)
+	// Version checking. Credits Lucas Cardellini
+	switch (current.verCheck)
 	{
-		case 2965504:
-			if (current.verCheck == "american")
-				version = "FairLightENG";
-			else
-				version = "NonENGVarious"; // German No-CD
+		case 0xFAE804C5: // Demo
+		case 0xC985ED33: // Release International
+			version = "ReleaseInternational";
 			break;
-		case 2964216: // French No-CD
-		case 3993600: // Spanish No-CD
-			version = "NonENGVarious";
+		case 0x4B8B2274: // Release English
+			version = "ReleaseEnglish";
+			break;
+		case 0xFC468D05: // Best Sellers Series
+			version = "BestSellersSeries";
 			break;
 	}
 }
